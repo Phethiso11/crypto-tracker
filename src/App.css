@@ -23,6 +23,9 @@ input {
   margin: 10px 0;
   border: 1px solid #ccc;
   border-radius: 4px;
+  width: 100%;
+  max-width: 400px;
+  /* Limit the width of the input */
 }
 
 button {
@@ -41,11 +44,13 @@ button {
 
 .crypto-item {
   background: #ffffff;
-  /* Keep divs white */
   margin: 10px;
   padding: 15px;
   border-radius: 8px;
-  width: 200px;
+  width: 100%;
+  /* Take full width on small screens */
+  max-width: 200px;
+  /* Limit width on larger screens */
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -64,5 +69,26 @@ button {
 /* Text color in dark mode for crypto-item */
 .dark-mode .crypto-item {
   color: black;
-  /* Text color black in dark mode */
+}
+
+/* Media Queries for responsiveness */
+@media (max-width: 600px) {
+  .crypto-item {
+    max-width: 90%;
+    /* Use more width on smaller screens */
+  }
+}
+
+@media (min-width: 601px) {
+  .crypto-item {
+    width: calc(33.33% - 20px);
+    /* Three items per row */
+  }
+}
+
+@media (min-width: 901px) {
+  .crypto-item {
+    width: calc(25% - 20px);
+    /* Four items per row */
+  }
 }

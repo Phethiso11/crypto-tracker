@@ -50,7 +50,7 @@ const App = () => {
       <header>
         <h1>Cryptocurrency Tracker</h1>
         <button onClick={toggleDarkMode}>
-          Toggle Dark Mode
+          Toggle Dark/Light Mode
         </button>
         <input
           type="text"
