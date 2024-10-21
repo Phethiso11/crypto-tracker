@@ -1,85 +1,175 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const App = () => {
   const [cryptos, setCryptos] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState(null);
+  const [loadingChart, setLoadingChart] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd`)
+      .then((response) => response.json())
+      .then((data) => setCryptos(data))
+      .catch((error) => console.error('Error fetching cryptos:', error));
   }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false');
-      const data = await response.json();
-      setCryptos(data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
   };
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
+  const handleSelectCrypto = (crypto) => {
+    setSelectedCrypto(crypto);
+    fetchChartData(crypto.id);
+  };
+
+  const fetchChartData = async (cryptoId) => {
+    setLoadingChart(true); // Start chart loading
+    try {
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/${cryptoId}/market_chart?vs_currency=usd&days=7`
+      );
+      const data = await response.json();
+      const labels = data.prices.map((price) => {
+        const date = new Date(price[0]);
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+      });
+
+      const prices = data.prices.map((price) => price[1]);
+
+      setChartData({
+        labels,
+        datasets: [
+          {
+            label: `${selectedCrypto.name} Price (Last 7 Days)`,
+            data: prices,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          },
+        ],
+      });
+      setLoadingChart(false); // End chart loading
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+      setLoadingChart(false);
+    }
   };
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
 
-  const handleSelectCrypto = (crypto) => {
-    setSelectedCrypto(crypto);
-  };
-
-  const handleBackHome = () => {
-    setSelectedCrypto(null);
-  };
-
-  const filteredCryptos = cryptos.filter(crypto =>
-    crypto.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <div className={`app ${darkMode ? 'dark-mode' : ''}`}>
-      <header>
-        <h1>Cryptocurrency Tracker</h1>
-        <button onClick={toggleDarkMode}>
-          Toggle Dark/Light Mode
-        </button>
-        <input
-          type="text"
-          placeholder="Search for a cryptocurrency..."
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-      </header>
-      <main>
-        {loading ? (
-          <p>Loading...</p>
-        ) : selectedCrypto ? (
-          <div className="crypto-detail">
-            <h2>{selectedCrypto.name}</h2>
-            <p>Current Price: ${selectedCrypto.current_price}</p>
-            <p>Market Cap: ${selectedCrypto.market_cap}</p>
-            <button onClick={handleBackHome}>Back to Home</button>
+    <div
+      style={{
+        backgroundColor: darkMode ? '#333' : '#fff',
+        color: darkMode ? '#000' : '#000',
+        minHeight: '100vh',
+        textAlign: 'center',
+        padding: '20px',
+      }}
+    >
+      <h1>Cryptocurrency Tracker</h1>
+      <button onClick={toggleDarkMode}>
+        {darkMode ? 'Light Mode' : 'Dark Mode'}
+      </button>
+
+      <input
+        type="text"
+        placeholder="Search cryptocurrency..."
+        value={searchTerm}
+        onChange={handleSearch}
+        style={{
+          padding: '10px',
+          margin: '20px 0',
+          width: '300px',
+          borderRadius: '5px',
+          border: '1px solid #ccc',
+        }}
+      />
+
+      {!selectedCrypto ? (
+        <div>
+          <h2>Popular Cryptocurrencies</h2>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '10px',
+            }}
+          >
+            {cryptos
+              .filter((crypto) =>
+                crypto.name.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+              .map((crypto) => (
+                <div
+                  key={crypto.id}
+                  onClick={() => handleSelectCrypto(crypto)}
+                  style={{
+                    border: '1px solid #ccc',
+                    padding: '10px',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    width: '150px',
+                    textAlign: 'center',
+                    backgroundColor: '#fff',
+                  }}
+                >
+                  <h3>{crypto.name}</h3>
+                  <p>Price: ${crypto.current_price}</p>
+                </div>
+              ))}
           </div>
-        ) : (
-          <div className="crypto-list">
-            {filteredCryptos.map(crypto => (
-              <div key={crypto.id} className="crypto-item" onClick={() => handleSelectCrypto(crypto)}>
-                <h2>{crypto.name}</h2>
-                <p>Price: ${crypto.current_price}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
+        </div>
+      ) : (
+        <div>
+          <h2>{selectedCrypto.name} Price Chart</h2>
+          {loadingChart ? (
+            <p>Loading chart...</p>
+          ) : (
+            chartData && <Line data={chartData} />
+          )}
+          <button
+            onClick={() => setSelectedCrypto(null)}
+            style={{
+              padding: '10px',
+              marginTop: '20px',
+              borderRadius: '5px',
+              backgroundColor: '#007bff',
+              color: '#fff',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Back to Home
+          </button>
+        </div>
+      )}
     </div>
   );
 };
