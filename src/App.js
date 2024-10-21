@@ -54,7 +54,6 @@ const App = () => {
       );
       const data = await response.json();
 
-      // Map price data into labels and prices arrays
       const labels = data.prices.map((price) => {
         const date = new Date(price[0]);
         return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -88,14 +87,26 @@ const App = () => {
     <div
       style={{
         backgroundColor: darkMode ? '#333' : '#fff',
-        color: darkMode ? '#000' : '#000',
+        color: darkMode ? '#fff' : '#000', // Text outside divs
         minHeight: '100vh',
         textAlign: 'center',
         padding: '20px',
       }}
     >
-      <h1>Cryptocurrency Tracker</h1>
-      <button onClick={toggleDarkMode}>
+      <h1 style={{ color: darkMode ? '#fff' : '#000' }}>Cryptocurrency Tracker</h1>
+      <button
+        onClick={toggleDarkMode}
+        style={{
+          padding: '10px',
+          marginBottom: '20px',
+          borderRadius: '5px',
+          backgroundColor: darkMode ? '#555' : '#007bff',
+          color: darkMode ? '#fff' : '#fff',
+          border: 'none',
+          cursor: 'pointer',
+          fontSize: '16px',
+        }}
+      >
         {darkMode ? 'Light Mode' : 'Dark Mode'}
       </button>
 
@@ -115,7 +126,7 @@ const App = () => {
 
       {!selectedCrypto ? (
         <div>
-          <h2>Popular Cryptocurrencies</h2>
+          <h2 style={{ color: darkMode ? '#fff' : '#000' }}>Popular Cryptocurrencies</h2>
           <div
             style={{
               display: 'flex',
@@ -140,6 +151,7 @@ const App = () => {
                     width: '150px',
                     textAlign: 'center',
                     backgroundColor: '#fff',
+                    color: '#000', // Text inside div stays black
                   }}
                 >
                   <h3>{crypto.name}</h3>
@@ -150,7 +162,7 @@ const App = () => {
         </div>
       ) : (
         <div>
-          <h2>{selectedCrypto.name} Price Chart</h2>
+          <h2 style={{ color: darkMode ? '#fff' : '#000' }}>{selectedCrypto.name} Price Chart</h2>
           {loadingChart ? (
             <p>Loading chart...</p>
           ) : (
