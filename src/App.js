@@ -8,7 +8,7 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
 
 // Register Chart.js components
@@ -31,7 +31,7 @@ const App = () => {
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd`)
+    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd')
       .then((response) => response.json())
       .then((data) => setCryptos(data))
       .catch((error) => console.error('Error fetching cryptos:', error));
@@ -47,12 +47,14 @@ const App = () => {
   };
 
   const fetchChartData = async (cryptoId) => {
-    setLoadingChart(true); // Start chart loading
+    setLoadingChart(true);
     try {
       const response = await fetch(
         `https://api.coingecko.com/api/v3/coins/${cryptoId}/market_chart?vs_currency=usd&days=7`
       );
       const data = await response.json();
+
+      // Map price data into labels and prices arrays
       const labels = data.prices.map((price) => {
         const date = new Date(price[0]);
         return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -64,14 +66,14 @@ const App = () => {
         labels,
         datasets: [
           {
-            label: `${selectedCrypto.name} Price (Last 7 Days)`,
+            label: 'Price (Last 7 Days)',
             data: prices,
             borderColor: 'rgba(75, 192, 192, 1)',
             backgroundColor: 'rgba(75, 192, 192, 0.2)',
           },
         ],
       });
-      setLoadingChart(false); // End chart loading
+      setLoadingChart(false);
     } catch (error) {
       console.error('Error fetching chart data:', error);
       setLoadingChart(false);
